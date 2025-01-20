@@ -9,3 +9,8 @@ DB_NAME = "scheduling-db"
 
 client = AsyncIOMotorClient(MONGO_URI)
 database = client[DB_NAME]
+
+# Collections for better code readability
+tutors_collection = database["tutors"]
+availabilities_collection = database["availabilities"]
+bookings_collection = database["bookings"]
