@@ -1,19 +1,33 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from datetime import time, date
+from pymongo import MongoClient
 
-class UserBase(BaseModel):
-    user_id: str
-    full_name: str
-    email: EmailStr
+client = MongoClient()
+db = client.scheduling_db
 
-class TutorCreate(UserBase):
-    specialization: str
+# User Model
+class UserModel:
+    def __init__(self, user_id: str, name: str, email: str, role: str, timezone: str):
+        self.user_id = user_id
+        self.name = name
+        self.email = email
+        self.role = role
+        self.timezone = timezone
 
-class TutorResponse(TutorCreate):
-    id: str
+    def to_dict(self):
+        return {
+            "user_id": self.user_id,
+            "name": self.name,
+            "email": self.email,
+            "role": self.role,
+            "timezone": self.timezone
+        }
 
-class StudentCreate(UserBase):
-    course: Optional[str] = None
-
-class StudentResponse(StudentCreate):
-    id: str
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            user_id=data["user_id"],
+            name=data["name"],
+            email=data["email"],
+            role=data["role"],
+            timezone=data["timezone"]
+        )

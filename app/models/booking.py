@@ -1,4 +1,8 @@
-from datetime import date, time
+from datetime import time, date
+from pymongo import MongoClient
+
+client = MongoClient()
+db = client.scheduling_db
 
 class BookingModel:
     def __init__(self, student_id: str, tutor_id: str, tutor_name: str, booking_date: date,
