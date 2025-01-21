@@ -8,50 +8,49 @@ from bson import ObjectId
 
 router = APIRouter()
 
-@router.post("/availability/", response_model=AvailabilityResponse)
-async def create_availability(availability: AvailabilityCreate):
-    tutor = await database["tutors"].find_one({"tutor_id": availability.tutor_id})
+@router.post("/availability/")
+async def create_availability(availabilities: List[AvailabilityCreate]):
+    tutor_id = availabilities[0].tutor_id
+    tutor_name = availabilities[0].tutor_name
 
-    if not tutor:
+    # Check if the tutor already exists
+    existing_tutor = await database["tutors"].find_one({"tutor_id": tutor_id})
+
+    availability_list = []
+    for availability in availabilities:
+        start_time = datetime.strptime(availability.start_time, "%Y-%m-%dT%H:%M:%S")
+        end_time = datetime.strptime(availability.end_time, "%Y-%m-%dT%H:%M:%S")
+
+        availability_data = {
+            "day_of_week": availability.day_of_week,
+            "start_time": start_time.isoformat(),
+            "end_time": end_time.isoformat(),
+            "is_recurring": availability.is_recurring,
+            "recurrence_start": availability.recurrence_start,
+            "recurrence_end": availability.recurrence_end,
+            "time_zone": availability.time_zone
+        }
+        availability_list.append(availability_data)
+
+    if existing_tutor:
+        # Update existing tutor's availabilities without duplication
+        await database["tutors"].update_one(
+            {"tutor_id": tutor_id},
+            {"$addToSet": {"availabilities": {"$each": availability_list}}}
+        )
+    else:
+        # Insert new tutor record
         tutor_data = {
-            "tutor_id": availability.tutor_id,
-            "tutor_name": availability.tutor_name
+            "tutor_id": tutor_id,
+            "tutor_name": tutor_name,
+            "availabilities": availability_list
         }
         await database["tutors"].insert_one(tutor_data)
 
-    # Convert start_time and end_time from string to datetime
-    start_time = datetime.strptime(availability.start_time, "%Y-%m-%dT%H:%M:%S")
-    end_time = datetime.strptime(availability.end_time, "%Y-%m-%dT%H:%M:%S")
+    # Retrieve updated tutor data
+    updated_tutor = await database["tutors"].find_one({"tutor_id": tutor_id}, {"_id": 0})
 
-    # Check for existing availability to prevent duplicates
-    existing_availability = await database["availabilities"].find_one({
-        "tutor_id": availability.tutor_id,
-        "day_of_week": availability.day_of_week,
-        "start_time": start_time.isoformat(),
-        "end_time": end_time.isoformat()
-    })
-
-    if existing_availability:
-        raise HTTPException(status_code=400, detail="Duplicate availability exists")
-
-    availability_data = availability.dict()
-    availability_data["start_time"] = start_time.isoformat()
-    availability_data["end_time"] = end_time.isoformat()
-
-    # Convert recurrence_start and recurrence_end safely to date objects
-    if availability.recurrence_start:
-        recurrence_start = datetime.strptime(availability.recurrence_start, "%Y-%m-%d").date()
-        availability_data["recurrence_start"] = recurrence_start.isoformat()
-
-    if availability.recurrence_end:
-        recurrence_end = datetime.strptime(availability.recurrence_end, "%Y-%m-%d").date()
-        availability_data["recurrence_end"] = recurrence_end.isoformat()
-
-    result = await database["availabilities"].insert_one(availability_data)
-    availability_data["id"] = str(result.inserted_id)
-    del availability_data["_id"]
-
-    return availability_data
+    return updated_tutor
 
 
 @router.get("/availability/{tutor_id}", response_model=List[AvailabilityResponse])
