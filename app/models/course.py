@@ -1,3 +1,7 @@
+"""
+This file contains the model for the course object.
+"""
+
 from datetime import time, date
 from pymongo import MongoClient
 

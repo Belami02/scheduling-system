@@ -1,3 +1,7 @@
+"""
+This module contains the FastAPI routes for the application.
+"""
+
 from fastapi import APIRouter, HTTPException
 from typing import List
 from bson import ObjectId
@@ -8,9 +12,11 @@ from datetime import datetime, date, time
 
 router = APIRouter()
 
+# converting ObjectId to string
 def objectid_to_str(obj):
     return str(obj) if obj else None
 
+# serializing datetime fields
 def serialize_datetime_fields(data: dict):
     for key, value in data.items():
         if isinstance(value, date):
@@ -21,18 +27,21 @@ def serialize_datetime_fields(data: dict):
             data[key] = [serialize_datetime_fields(item) if isinstance(item, dict) else item for item in value]
     return data
 
-
-# Helper function to convert datetime.date to datetime.datetime
+# converting date to datetime
 def convert_date_to_datetime(date_obj):
     if isinstance(date_obj, date):
         return datetime.combine(date_obj, datetime.min.time())
     return date_obj
 
-# Helper function to check for duplicates
+# checking for duplicates
 async def is_duplicate(collection, query):
     return await collection.find_one(query) is not None
 
-# Booking Routes
+"""
+The following routes are defined:
+- /bookings
+- /bookings/{booking_id}
+"""
 @router.post("/bookings", response_model=BookingModel)
 async def create_booking(booking: BookingModel):
     booking_dict = booking.dict()
@@ -68,7 +77,12 @@ async def delete_booking(booking_id: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Booking not found")
 
-# Course Routes
+
+"""
+The following routes are defined:
+- /courses
+- /courses/{course_id}
+"""
 @router.post("/courses", response_model=CourseModel)
 async def create_course(course: CourseModel):
     # Check for duplicate course
@@ -100,10 +114,15 @@ async def delete_course(course_id: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Course not found")
 
-# Role Routes
+
+"""
+The following routes are defined:
+- /roles
+- /roles/{role_name}
+"""
 @router.post("/roles", response_model=RoleModel)
 async def create_role(role: RoleModel):
-    # Check for duplicate role
+    # check for duplicate role
     if await is_duplicate(db.role, {"role_name": role.role_name}):
         raise HTTPException(status_code=400, detail="Role with this name already exists.")
     
@@ -131,7 +150,13 @@ async def delete_role(role_name: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Role not found")
 
-# Tutor Availability Routes
+
+
+"""
+The following routes are defined:
+- /tutor_availabilities
+- /tutor_availabilities/{user_id}
+"""
 @router.post("/tutor_availabilities", response_model=TutorAvailabilityModel)
 async def create_tutor_availability(tutor_availability: TutorAvailabilityModel):
     tutor_availability_dict = tutor_availability.dict()
@@ -165,16 +190,21 @@ async def delete_tutor_availability(user_id: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Tutor availability not found")
 
-# User Routes
+
+
+"""
+The following routes are defined:
+- /users
+- /users/{user_id}
+"""
 @router.post("/users", response_model=UserModel)
 async def create_user(user: UserModel):
-    # Convert any date fields to datetime
     user_dict = user.dict()
     
     if user_dict.get('date_joined'):
         user_dict['date_joined'] = convert_date_to_datetime(user_dict['date_joined'])
     
-    # Check for duplicate user
+    # check for duplicate user
     if await is_duplicate(db.user, {"user_id": user.user_id}):
         raise HTTPException(status_code=400, detail="User with this ID already exists.")
     

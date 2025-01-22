@@ -1,9 +1,15 @@
+"""
+This module contains the models for the application.
+"""
+
 from datetime import time, date
 from pydantic import BaseModel
 from typing import List, Optional
 
 
-# Booking Model
+"""
+Booking model
+"""
 class BookingModel(BaseModel):
     student_id: str
     tutor_id: str
@@ -43,7 +49,9 @@ class BookingModel(BaseModel):
         )
 
 
-# Course Model
+"""
+Course model
+"""
 class CourseModel(BaseModel):
     course_id: str
     course_name: str
@@ -65,7 +73,9 @@ class CourseModel(BaseModel):
         )
 
 
-# Role Model
+"""
+Role Model
+"""
 class RoleModel(BaseModel):
     role_name: str
 
@@ -82,7 +92,9 @@ class RoleModel(BaseModel):
         return cls(role_name=data["role_name"])
 
 
-# Tutor Availability Model
+"""
+Availability Slot Model
+"""
 class AvailabilitySlot(BaseModel):
     recurring: bool
     time_start: time
@@ -110,6 +122,9 @@ class AvailabilitySlot(BaseModel):
         )
 
 
+"""
+Tutor Availability Model
+"""
 class TutorAvailabilityModel(BaseModel):
     course_id: str
     user_id: str
@@ -135,7 +150,9 @@ class TutorAvailabilityModel(BaseModel):
         )
 
 
-# User Model
+"""
+User Model
+"""
 class UserModel(BaseModel):
     user_id: str
     name: str

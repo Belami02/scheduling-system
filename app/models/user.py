@@ -1,10 +1,14 @@
+"""
+This is the User model that will be used in the application.
+"""
+
 from datetime import time, date
 from pymongo import MongoClient
 
 client = MongoClient()
 db = client.scheduling_db
 
-# User Model
+# user Model
 class UserModel:
     def __init__(self, user_id: str, name: str, email: str, role: str, timezone: str):
         self.user_id = user_id

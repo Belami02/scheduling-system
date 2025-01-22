@@ -1,3 +1,7 @@
+"""
+This file is used to connect to the MongoDB database.
+"""
+
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 from dotenv import load_dotenv
@@ -10,7 +14,7 @@ DB_NAME = "scheduling-db"
 client = AsyncIOMotorClient(MONGO_URI)
 database = client[DB_NAME]
 
-# Collections for better code readability
+# tables in the database
 users_collection = database["users"]
 tutors_availabilities_collection = database["tutors"]
 bookings_collection = database["bookings"]

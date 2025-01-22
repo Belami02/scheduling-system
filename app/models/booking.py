@@ -1,9 +1,13 @@
+"""
+This module contains the Booking Model.
+"""
 from datetime import time, date
 from pymongo import MongoClient
 
 client = MongoClient()
 db = client.scheduling_db
 
+# Booking Model
 class BookingModel:
     def __init__(self, student_id: str, tutor_id: str, tutor_name: str, booking_date: date,
                  start_time: time, end_time: time, subject: str, time_zone: str):

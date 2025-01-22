@@ -1,3 +1,7 @@
+"""
+This is the TutorAvailability model that will be used in the application.
+"""
+
 from datetime import time, date
 from pymongo import MongoClient
 
@@ -9,7 +13,7 @@ class TutorAvailabilityModel:
     def __init__(self, course_id: str, user_id: str):
         self.course_id = course_id
         self.user_id = user_id
-        self.availability = []  # List of availability slots
+        self.availability = []  # list of availability slots
 
     def add_availability_slot(self, recurring: bool, time_start: time, time_end: time, recurrence_start: date = None, recurrence_end: date = None):
         slot = {
